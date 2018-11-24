@@ -1,0 +1,61 @@
+FROM ubuntu:latest
+
+RUN apt-get update && apt-get install -y software-properties-common language-pack-en-base \
+    && LC_ALL=en_US.UTF-8 add-apt-repository -y ppa:ondrej/php \
+    && apt-get update
+
+RUN apt-get install -y \
+    php7.2 \
+    php7.2-fpm \
+    php7.2-curl \
+    php7.2-dom \
+    php7.2-gd \
+    php7.2-ctype \
+    php7.2-zip \
+    php7.2-xml \
+    php7.2-iconv \
+    php7.2-sqlite3 \
+    php7.2-mysqli \
+    php7.2-pgsql \
+    php7.2-json \
+    php7.2-phar \
+    php7.2-pdo \
+    php7.2-mbstring \
+    php7.2-bcmath \
+    php7.2-tokenizer \
+    php7.2-fileinfo \
+    && mkdir /run/php \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Environments
+ARG TIMEZONE
+ARG PHP_MEMORY_LIMIT
+ARG MAX_UPLOAD
+ARG PHP_MAX_FILE_UPLOAD
+ARG PHP_MAX_POST
+
+RUN sed -i "s|;*daemonize\s*=\s*yes|daemonize = no|g" /etc/php/7.2/fpm/php-fpm.conf && \
+	sed -i "s|;*run/php/php7.2-fpm.sock|listen = 9000|g" /etc/php/7.2/fpm/pool.d/www.conf && \
+	sed -i "s|;*listen\s*=\s*/||g" /etc/php/7.2/fpm/pool.d/www.conf && \
+    sed -i "s|;*user\s*=\s*www-data|user = 1000|g" /etc/php/7.2/fpm/pool.d/www.conf && \
+    sed -i "s|;*group\s*=\s*www-data|group = 1000|g" /etc/php/7.2/fpm/pool.d/www.conf && \
+	sed -i "s|;*date.timezone =.*|date.timezone = ${TIMEZONE}|i" /etc/php/7.2/fpm/php.ini && \
+	sed -i "s|;*memory_limit =.*|memory_limit = ${PHP_MEMORY_LIMIT}|i" /etc/php/7.2/fpm/php.ini && \
+    sed -i "s|;*upload_max_filesize =.*|upload_max_filesize = ${MAX_UPLOAD}|i" /etc/php/7.2/fpm/php.ini && \
+    sed -i "s|;*max_file_uploads =.*|max_file_uploads = ${PHP_MAX_FILE_UPLOAD}|i" /etc/php/7.2/fpm/php.ini && \
+    sed -i "s|;*post_max_size =.*|post_max_size = ${PHP_MAX_POST}|i" /etc/php/7.2/fpm/php.ini && \
+    sed -i "s|;*cgi.fix_pathinfo=.*|cgi.fix_pathinfo= 0|i" /etc/php/7.2/fpm/php.ini
+
+# Set Workdir
+RUN mkdir /www
+WORKDIR /www
+
+# Expose volumes
+VOLUME ["/www"]
+
+# Expose ports
+EXPOSE 9000
+
+# Entry point
+ENTRYPOINT ["php-fpm7.2"]

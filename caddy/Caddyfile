@@ -1,0 +1,19 @@
+# Example app
+# myapp.localhost {
+#     # Public folder
+#     root /srv/myapp/public
+# 
+#     # php-fpm config
+#     fastcgi / php-fpm:9000 php {
+#        root /www/myapp/public
+#     }
+# 
+#     # Rewrite for pretty urls
+#     rewrite {
+#         to {path} {path}/ /index.php?{query}
+#     }
+# 
+#     # View logs with docker-compose logs
+#     log stdout
+#     errors stdout
+# }
